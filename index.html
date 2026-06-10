@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Louisville Community Yard Sale Map – June 10–14, 2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --cream-dark: #EDE6D6;
+    --green: #2D5016;
+    --green-light: #3D6B20;
+    --green-pale: #E8F0E0;
+    --mustard: #C8A84B;
+    --mustard-pale: #F5EDD0;
+    --rust: #B85C38;
+    --rust-pale: #F7E8E0;
+    --charcoal: #2C2C2C;
+    --gray: #6B6B6B;
+    --gray-light: #D4CFC6;
+    --white: #FFFFFF;
+    --shadow: 0 2px 8px rgba(44,44,44,0.12);
+    --shadow-lg: 0 4px 16px rgba(44,44,44,0.18);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    background: var(--cream);
+    color: var(--charcoal);
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  /* HEADER */
+  #site-header {
+    background: var(--green);
+    color: var(--cream);
+    padding: 14px 16px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  #site-header h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.05rem, 3.5vw, 1.4rem);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  #site-header h1 span { color: var(--mustard); }
+  .header-sub {
+    font-size: 0.78rem;
+    color: #b8cfac;
+    margin-top: 2px;
+  }
+  .header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .header-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .btn-hdr {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: var(--cream);
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn-hdr:hover, .btn-hdr:focus { background: rgba(255,255,255,0.22); outline: 2px solid var(--mustard); }
+  /* DISCLAIMER */
+  #disclaimer {
+    background: var(--mustard-pale);
+    border-left: 4px solid var(--mustard);
+    padding: 9px 14px;
+    font-size: 0.8rem;
+    color: #5a4a1a;
+    line-height: 1.4;
+  }
+  /* MAIN LAYOUT */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 90px);
+    overflow: hidden;
+  }
+  #controls-bar {
+    background: var(--cream-dark);
+    border-bottom: 1px solid var(--gray-light);
+    padding: 10px 12px;
+    overflow-y: auto;
+    flex-shrink: 0;
+    max-height: 55vh;
+    transition: max-height 0.3s ease;
+  }
+  #controls-bar.collapsed { max-height: 48px; overflow: hidden; }
+  #controls-toggle-btn {
+    display: none;
+    width: 100%;
+    background: var(--green);
+    color: var(--cream);
+    border: none;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 0;
+    font-weight: 600;
+  }
+  #content-area {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+  #map-container {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+  }
+  #map { width: 100%; height: 100%; }
+  #list-container {
+    width: 360px;
+    overflow-y: auto;
+    background: var(--cream);
+    border-left: 1px solid var(--gray-light);
+    flex-shrink: 0;
+  }
+  /* VIEW MODES */
+  body.view-map #list-container { display: none; }
+  body.view-map #map-container { display: flex; }
+  body.view-list #map-container { display: none; }
+  body.view-list #list-container { width: 100%; border-left: none; }
+  /* CONTROLS LAYOUT */
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .ctrl-section { margin-bottom: 10px; }
+  .ctrl-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--green);
+    margin-bottom: 5px;
+  }
+  /* SEARCH */
+  #search-wrap { position: relative; }
+  #keyword-search {
+    width: 100%;
+    padding: 9px 36px 9px 12px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    background: var(--white);
+    color: var(--charcoal);
+    transition: border-color 0.15s;
+  }
+  #keyword-search:focus { border-color: var(--green); outline: none; box-shadow: 0 0 0 3px rgba(45,80,22,0.12); }
+  #search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: var(--gray); font-size: 1.1rem; padding: 2px;
+  }
+  /* FILTER PILLS */
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .pill {
+    padding: 5px 11px;
+    border-radius: 20px;
+    border: 1.5px solid var(--gray-light);
+    background: var(--white);
+    font-size: 0.78rem;
+    cursor: pointer;
+    color: var(--charcoal);
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .pill:hover, .pill:focus { border-color: var(--green); background: var(--green-pale); outline: none; }
+  .pill.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: var(--white);
+    font-weight: 600;
+  }
+  .pill.active:focus { outline: 2px solid var(--mustard); }
+  /* CATEGORY FILTER */
+  #cat-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-height: 80px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  #cat-wrap.expanded { max-height: 500px; }
+  #cat-toggle {
+    background: none; border: none; color: var(--green); font-size: 0.78rem;
+    cursor: pointer; text-decoration: underline; margin-top: 4px; padding: 0;
+    font-weight: 600;
+  }
+  .cat-pill {
+    padding: 4px 9px;
+    border-radius: 14px;
+    border: 1.5px solid var(--gray-light);
+    background: var(--white);
+    font-size: 0.72rem;
+    cursor: pointer;
+    color: var(--charcoal);
+    transition: all 0.12s;
+  }
+  .cat-pill:hover, .cat-pill:focus { border-color: var(--rust); background: var(--rust-pale); outline: none; }
+  .cat-pill.active { background: var(--rust); border-color: var(--rust); color: var(--white); font-weight: 600; }
+  /* SORT / ACTION ROW */
+  .ctrl-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  select.ctrl-select {
+    padding: 7px 10px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    background: var(--white);
+    color: var(--charcoal);
+    cursor: pointer;
+  }
+  select.ctrl-select:focus { border-color: var(--green); outline: none; }
+  .btn-sm {
+    padding: 7px 13px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .btn-green { background: var(--green); color: var(--white); border-color: var(--green); }
+  .btn-green:hover, .btn-green:focus { background: var(--green-light); outline: 2px solid var(--mustard); }
+  .btn-outline { background: var(--white); color: var(--green); border-color: var(--green); }
+  .btn-outline:hover, .btn-outline:focus { background: var(--green-pale); outline: 2px solid var(--green); }
+  .btn-rust { background: var(--rust); color: var(--white); border-color: var(--rust); }
+  .btn-rust:hover, .btn-rust:focus { background: #9e4e2e; outline: 2px solid var(--mustard); }
+  /* STATUS BAR */
+  #status-bar {
+    background: var(--green);
+    color: var(--cream);
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  #status-bar strong { color: var(--mustard); }
+  /* VIEW TOGGLE */
+  .view-toggle {
+    display: flex;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .view-toggle button {
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    border: none;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-right: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.12s;
+  }
+  .view-toggle button:last-child { border-right: none; }
+  .view-toggle button.active { background: rgba(255,255,255,0.18); color: var(--white); font-weight: 700; }
+  .view-toggle button:focus { outline: 2px solid var(--mustard); }
+  /* SALE CARDS */
+  #sale-list {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sale-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 12px 13px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .sale-card:hover, .sale-card:focus-within { border-color: var(--green); box-shadow: var(--shadow-lg); }
+  .sale-card.highlighted { border-color: var(--mustard); box-shadow: 0 0 0 3px rgba(200,168,75,0.25); }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+  .sale-num {
+    background: var(--green);
+    color: var(--white);
+    font-weight: 700;
+    font-size: 0.8rem;
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: Georgia, serif;
+  }
+  .card-addr {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--charcoal);
+    line-height: 1.3;
+    flex: 1;
+  }
+  .card-actions {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    background: none;
+    border: 1.5px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.12s;
+    color: var(--gray);
+  }
+  .icon-btn:hover, .icon-btn:focus { border-color: var(--green); color: var(--green); outline: 2px solid var(--green); }
+  .icon-btn.fav-active { color: var(--rust); border-color: var(--rust); }
+  .icon-btn.route-active { color: var(--mustard); border-color: var(--mustard); }
+  /* BADGES */
+  .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .badge {
+    font-size: 0.67rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .badge-open { background: #1e6e1e; color: #fff; }
+  .badge-soon { background: #9e6b00; color: #fff; }
+  .badge-later { background: #1a5c7a; color: #fff; }
+  .badge-closed { background: #888; color: #fff; }
+  .badge-notime { background: var(--gray-light); color: var(--charcoal); }
+  .badge-nodate { background: #d4cfc6; color: #444; }
+  .badge-multi { background: var(--mustard-pale); color: #7a5a00; border: 1px solid var(--mustard); }
+  .badge-moving { background: var(--rust-pale); color: var(--rust); border: 1px solid var(--rust); }
+  .badge-noearly { background: #ffe8e8; color: #8a1a1a; border: 1px solid #e8a0a0; }
+  /* HOURS */
+  .card-hours { font-size: 0.78rem; color: var(--gray); margin-bottom: 5px; }
+  .hour-row { margin-bottom: 2px; }
+  .hour-day { font-weight: 600; color: var(--charcoal); }
+  /* CATEGORIES */
+  .card-cats { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; }
+  .cat-tag {
+    font-size: 0.68rem;
+    background: var(--green-pale);
+    color: var(--green);
+    border: 1px solid #c0d4b0;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  /* ITEMS */
+  .card-items { font-size: 0.8rem; color: var(--charcoal); margin-bottom: 5px; line-height: 1.45; }
+  .card-notes { font-size: 0.77rem; color: var(--rust); font-style: italic; }
+  /* DIRECTIONS */
+  .card-dirs a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--green);
+    font-size: 0.77rem;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 6px;
+  }
+  .card-dirs a:hover { text-decoration: underline; }
+  /* MAP POPUP */
+  .leaflet-popup-content { min-width: 200px; max-width: 280px; }
+  .popup-title { font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; color: var(--charcoal); }
+  .popup-badges { margin-bottom: 5px; }
+  .popup-text { font-size: 0.78rem; color: var(--charcoal); line-height: 1.4; }
+  .popup-link { color: var(--green); font-weight: 600; font-size: 0.78rem; text-decoration: none; display: block; margin-top: 5px; }
+  .popup-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .popup-btn {
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.73rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+  }
+  .popup-btn:hover { opacity: 0.85; }
+  .popup-btn-fav { background: var(--rust); color: #fff; }
+  .popup-btn-route { background: var(--mustard); color: #222; }
+  /* LEGEND */
+  #map-legend {
+    position: absolute;
+    bottom: 28px;
+    right: 8px;
+    z-index: 900;
+    background: rgba(245,240,232,0.95);
+    border: 1.5px solid var(--gray-light);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    font-size: 0.72rem;
+    color: var(--charcoal);
+    box-shadow: var(--shadow);
+    min-width: 140px;
+  }
+  #map-legend h4 { font-size: 0.72rem; font-weight: 700; color: var(--green); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(0,0,0,0.2); }
+  /* ROUTE PANEL */
+  #route-panel {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 900;
+    background: rgba(245,240,232,0.97);
+    border: 2px solid var(--mustard);
+    border-radius: var(--radius);
+    padding: 10px 13px;
+    box-shadow: var(--shadow-lg);
+    min-width: 200px;
+    max-width: 280px;
+    display: none;
+  }
+  #route-panel.visible { display: block; }
+  #route-panel h4 { font-family: Georgia, serif; font-size: 0.85rem; color: var(--green); margin-bottom: 6px; font-weight: 700; }
+  #route-stops { list-style: none; margin-bottom: 8px; max-height: 160px; overflow-y: auto; }
+  #route-stops li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--gray-light);
+    font-size: 0.78rem;
+  }
+  #route-stops li:last-child { border-bottom: none; }
+  .route-stop-num { font-weight: 700; color: var(--mustard); min-width: 18px; }
+  .route-stop-remove { background: none; border: none; color: var(--rust); cursor: pointer; font-size: 0.9rem; margin-left: auto; }
+  .route-stop-up, .route-stop-down { background: none; border: none; color: var(--gray); cursor: pointer; font-size: 0.7rem; padding: 0 2px; }
+  /* MODAL */
+  #modal-overlay {
+    display: none;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 2000; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  #modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--cream);
+    border-radius: var(--radius);
+    padding: 20px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-box h3 { font-family: Georgia, serif; color: var(--green); margin-bottom: 12px; font-size: 1.05rem; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; color: var(--charcoal); }
+  .modal-field input, .modal-field textarea, .modal-field select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    background: var(--white);
+    color: var(--charcoal);
+  }
+  .modal-field input:focus, .modal-field textarea:focus { border-color: var(--green); outline: none; }
+  .modal-field textarea { min-height: 70px; resize: vertical; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+  /* EMPTY STATE */
+  #empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray);
+    display: none;
+  }
+  #empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+  /* MAP FALLBACK */
+  #map-fallback {
+    display: none;
+    padding: 20px;
+    background: var(--mustard-pale);
+    border: 1.5px solid var(--mustard);
+    border-radius: var(--radius);
+    margin: 12px;
+    font-size: 0.85rem;
+    color: #5a4a1a;
+  }
+  /* MAP CONTROLS */
+  #map-recenter {
+    position: absolute; bottom: 70px; right: 10px; z-index: 900;
+    background: var(--white); border: 2px solid var(--green);
+    border-radius: var(--radius-sm); padding: 7px 10px; cursor: pointer;
+    font-size: 0.78rem; font-weight: 700; color: var(--green);
+    box-shadow: var(--shadow);
+  }
+  #map-recenter:hover, #map-recenter:focus { background: var(--green-pale); outline: 2px solid var(--mustard); }
+  /* PRINT */
+  @media print {
+    #site-header, #controls-bar, #status-bar, #map-container, #route-panel, #map-legend { display: none !important; }
+    #list-container { width: 100% !important; border: none !important; overflow: visible !important; }
+    #sale-list { gap: 12px; }
+    .sale-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+    .icon-btn, .card-dirs a { display: none !important; }
+  }
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    #app { height: auto; overflow: visible; }
+    #content-area { flex-direction: column; overflow: visible; }
+    #list-container { width: 100%; border-left: none; border-top: 1px solid var(--gray-light); overflow: visible; max-height: none; }
+    #controls-toggle-btn { display: block; }
+    #controls-bar { max-height: none; overflow: visible; }
+    #controls-bar.collapsed { max-height: 0; padding: 0 12px; overflow: hidden; }
+    #map-container { height: 320px; flex: none; }
+    #map { height: 320px; }
+    body.view-map #map-container { height: calc(100vh - 160px); }
+    body.view-map #map { height: 100%; }
+    body.view-list #list-container { max-height: none; }
+    .controls-grid { grid-template-columns: 1fr; }
+    #route-panel { position: fixed; bottom: 0; right: 0; left: 0; top: auto; max-width: 100%; border-radius: var(--radius) var(--radius) 0 0; }
+    #map-legend { bottom: 10px; }
+    #disclaimer { font-size: 0.75rem; }
+  }
+  @media (min-width: 769px) {
+    #controls-toggle-btn { display: none; }
+    #controls-bar.collapsed { max-height: none !important; padding: 10px 12px !important; overflow: visible !important; }
+    #app { height: calc(100vh - 90px); }
+    #map-container { height: 100%; }
+    #map { height: 100%; }
+    #list-container { height: 100%; overflow-y: auto; }
+  }
+  /* FOCUS VISIBLE */
+  :focus-visible { outline: 2px solid var(--mustard); outline-offset: 2px; }
+</style>
+</head>
+<body class="view-both">
+<header id="site-header" role="banner">
+  <div class="header-row">
+    <div>
+      <h1>📍 Louisville <span>Community Yard Sale</span> Map</h1>
+      <div class="header-sub">June 10–14, 2026 &nbsp;·&nbsp; Louisville, Ohio &nbsp;·&nbsp; Last updated June 10, 2026</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-hdr" id="btn-share" aria-label="Copy link to share">🔗 Share</button>
+      <button class="btn-hdr" id="btn-print" aria-label="Print sale list">🖨 Print</button>
+      <button class="btn-hdr" id="btn-report" aria-label="Report an update to a sale listing">✏️ Report Update</button>
+    </div>
+  </div>
+</header>
+<div id="disclaimer" role="note" aria-label="Disclaimer">
+  Sale details were collected from publicly shared posts and may change. Please respect posted hours, avoid arriving early, and use caution when driving or parking near sale locations.
+</div>
+
+<div id="app">
+  <button id="controls-toggle-btn" aria-expanded="true" aria-controls="controls-bar">▾ Search &amp; Filters</button>
+  <div id="controls-bar" role="search" aria-label="Search and filter controls">
+    <div class="ctrl-section">
+      <div class="ctrl-label" id="search-label">Search Items, Addresses &amp; Notes</div>
+      <div id="search-wrap">
+        <input type="search" id="keyword-search" placeholder='e.g. "golf clubs", "Little Sleepies", "furniture"…' aria-labelledby="search-label" autocomplete="off">
+        <button id="search-clear" aria-label="Clear search" title="Clear search">✕</button>
+      </div>
+    </div>
+    <div class="controls-grid">
+      <div>
+        <div class="ctrl-section">
+          <div class="ctrl-label">Day</div>
+          <div class="pill-row" role="group" aria-label="Filter by day" id="day-filters">
+            <button class="pill active" data-day="any" aria-pressed="true">Any Day</button>
+            <button class="pill" data-day="Wednesday" aria-pressed="false">Wed 6/10</button>
+            <button class="pill" data-day="Thursday" aria-pressed="false">Thu 6/11</button>
+            <button class="pill" data-day="Friday" aria-pressed="false">Fri 6/12</button>
+            <button class="pill" data-day="Saturday" aria-pressed="false">Sat 6/13</button>
+            <button class="pill" data-day="Sunday" aria-pressed="false">Sun 6/14</button>
+          </div>
+        </div>
+        <div class="ctrl-section">
+          <div class="ctrl-label">Time</div>
+          <div class="pill-row" role="group" aria-label="Filter by time" id="time-filters">
+            <button class="pill active" data-time="any" aria-pressed="true">Any Time</button>
+            <button class="pill" data-time="open" aria-pressed="false">Open Now</button>
+            <button class="pill" data-time="morning" aria-pressed="false">Morning</button>
+            <button class="pill" data-time="afternoon" aria-pressed="false">Afternoon</button>
+            <button class="pill" data-time="evening" aria-pressed="false">Evening</button>
+            <button class="pill" data-time="notime" aria-pressed="false">Time Not Listed</button>
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <label for="sort-select" class="ctrl-label" style="margin:0">Sort:</label>
+          <select id="sort-select" class="ctrl-select" aria-label="Sort sales by">
+            <option value="num">Sale Number</option>
+            <option value="addr">Address</option>
+            <option value="earliest">Opens Earliest</option>
+            <option value="closing">Closing Soonest</option>
+            <option value="items">Most Items</option>
+            <option value="fav">Favorites First</option>
+            <option value="closest" id="opt-closest" disabled>Closest to Me</option>
+          </select>
+          <button class="btn-sm btn-outline" id="btn-location" aria-label="Use my location for closest sort">📍 Use My Location</button>
+          <button class="btn-sm btn-outline" id="btn-favonly" aria-pressed="false" aria-label="Show favorites only">♥ Favorites Only</button>
+          <button class="btn-sm btn-rust" id="btn-reset" aria-label="Reset all filters">↺ Reset All</button>
+        </div>
+      </div>
+      <div>
+        <div class="ctrl-section">
+          <div class="ctrl-label">Categories <span style="font-weight:400;text-transform:none;font-size:0.7rem">(select multiple)</span></div>
+          <div id="cat-wrap" aria-label="Category filters" role="group"></div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button id="cat-toggle" aria-expanded="false">Show all categories ▾</button>
+            <button class="btn-sm btn-outline" id="btn-clear-cats" aria-label="Clear all category filters" style="padding:3px 8px;font-size:0.72rem">Clear Categories</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="status-bar" role="status" aria-live="polite">
+    <div><strong id="match-count">28</strong> sales found</div>
+    <div class="view-toggle" role="group" aria-label="View mode">
+      <button class="active" data-view="both" aria-pressed="true">Map + List</button>
+      <button data-view="map" aria-pressed="false">Map Only</button>
+      <button data-view="list" aria-pressed="false">List Only</button>
+    </div>
+    <div id="route-count-status" style="display:none">🗺 <strong id="route-count-num">0</strong> stops in route</div>
+  </div>
+
+  <div id="content-area">
+    <div id="map-container" role="main" aria-label="Interactive yard sale map">
+      <div id="map" aria-label="Map of yard sales"></div>
+      <div id="map-fallback" role="alert"></div>
+      <button id="map-recenter" aria-label="Re-center map on Louisville">⌖ Re-center</button>
+      <div id="map-legend" aria-label="Map legend">
+        <h4>Legend</h4>
+        <div class="legend-row"><div class="legend-dot" style="background:#1e6e1e"></div> Open now</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#1a5c7a"></div> Opens later today</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#9e6b00"></div> Closing soon</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#5a5a5a"></div> Closed/past today</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#b85c38"></div> Upcoming day</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#7a5a9a"></div> Date/time not listed</div>
+      </div>
+      <div id="route-panel" aria-label="Route planner" aria-live="polite">
+        <h4>🗺 Route Planner</h4>
+        <ul id="route-stops" aria-label="Selected route stops"></ul>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-sm btn-green" id="btn-open-route" aria-label="Open full route in Google Maps">Open in Maps</button>
+          <button class="btn-sm btn-outline" id="btn-clear-route" aria-label="Clear all route stops">Clear Route</button>
+        </div>
+      </div>
+    </div>
+    <div id="list-container" role="complementary" aria-label="Sale listings">
+      <div id="sale-list" aria-label="Sale cards"></div>
+      <div id="empty-state" role="status">
+        <div class="empty-icon">🏷️</div>
+        <p><strong>No sales match your filters.</strong></p>
+        <p style="font-size:0.85rem;margin-top:6px">Try changing your day, time, or category filters.</p>
+        <button class="btn-sm btn-outline" style="margin-top:12px" onclick="resetFilters()">Reset Filters</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+    <h3 id="modal-title">✏️ Report an Update</h3>
+    <p style="font-size:0.8rem;color:var(--gray);margin-bottom:14px">Let us know if a sale's details have changed. This form is for community corrections only.</p>
+    <div class="modal-field">
+      <label for="report-addr">Sale Address *</label>
+      <input type="text" id="report-addr" placeholder="e.g. 3000 Swallen Ave">
+    </div>
+    <div class="modal-field">
+      <label for="report-what">What Changed?</label>
+      <textarea id="report-what" placeholder="e.g. Sale is cancelled, hours changed to 9–3, new items added…"></textarea>
+    </div>
+    <div class="modal-field">
+      <label for="report-hours">Updated Hours or Dates (optional)</label>
+      <input type="text" id="report-hours" placeholder="e.g. Saturday 9 AM to 2 PM only">
+    </div>
+    <div class="modal-field">
+      <label for="report-items">Updated Item Info (optional)</label>
+      <textarea id="report-items" placeholder="Any new or corrected item details…" style="min-height:50px"></textarea>
+    </div>
+    <p style="font-size:0.72rem;color:var(--gray);margin-bottom:8px">Note: This form is a community tool. Do not include seller names, phone numbers, or private information.</p>
+    <div class="modal-actions">
+      <button class="btn-sm btn-outline" id="modal-cancel">Cancel</button>
+      <button class="btn-sm btn-green" id="modal-submit">Submit Update</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const sales = [
+  {id:1,address:"230 Brookfield St, Louisville, OH 44641",days:["Saturday","Sunday"],hours:{Saturday:"8:30 AM to 4:00 PM",Sunday:"8:30 AM to 4:00 PM"},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
+  {id:2,address:"3000 Swallen Ave, Louisville, OH 44641",days:["Saturday","Sunday"],hours:{Saturday:"9:00 AM to 5:00 PM",Sunday:"9:00 AM to 5:00 PM"},items:"Tools, lawnmowers, mini fridge, crib, kids clothing, Little Sleepies pajamas, toys, women's clothing and shoes, bathroom fixtures, mailboxes, porch chairs, pots and pans, and more.",categories:["Tools and lawn equipment","Baby and toddler","Kids clothing","Women's clothing","Shoes and handbags","Toys and games","Electronics and appliances","Furniture","Housewares and kitchen","Outdoor and patio"],notes:""},
+  {id:3,address:"1425 Washington Blvd, Louisville, OH 44641",days:["Friday","Saturday","Sunday"],hours:{Friday:"9:00 AM to 5:00 PM",Saturday:"9:00 AM to 5:00 PM",Sunday:"9:00 AM to 5:00 PM"},items:"Multi family sale with infant and toddler clothing for boys and girls, kids toys, maternity clothes, housewares, party and wedding items, decor, women's clothing, and children's and adult books.",categories:["Baby and toddler","Kids clothing","Toys and games","Books","Women's clothing","Housewares and kitchen","Home decor","Party and wedding items"],notes:"Multi family sale"},
+  {id:4,address:"5914 Stark Boulevard, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"9:00 AM to 4:00 PM",Saturday:"9:00 AM to 1:00 PM"},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
+  {id:5,address:"2134 Hillocke St, Louisville, OH 44641",days:["Thursday","Saturday"],hours:{Thursday:"9:00 AM to 5:00 PM",Saturday:"9:00 AM to 2:00 PM"},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
+  {id:6,address:"5643 Ault Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"8:00 AM to 3:00 PM",Friday:"8:00 AM to 3:00 PM",Saturday:"8:00 AM to 3:00 PM"},items:"Two XL dog crates, go cart, Boss salt spreader, holiday items, clothing, decor, and more.",categories:["Pet items","Camping and automotive","Tools and lawn equipment","Home decor","Miscellaneous"],notes:""},
+  {id:7,address:"1020 Wellman St, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"9:00 AM to 5:00 PM",Friday:"9:00 AM to 5:00 PM",Saturday:"9:00 AM to 5:00 PM"},items:"Men's shirts size 2XL and up, men's shorts and pants size 40 and up, women's clothes, golf clubs, cabinet, home decor, and more.",categories:["Men's clothing","Women's clothing","Sports and golf","Furniture","Home decor"],notes:""},
+  {id:8,address:"5468 Brook Run Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"9:00 AM to 2:00 PM",Friday:"9:00 AM to 2:00 PM",Saturday:"9:00 AM to 2:00 PM"},items:"Multi family sale.",categories:["Miscellaneous"],notes:"Multi family sale"},
+  {id:9,address:"5383 Broadway Ave, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"8:00 AM to 4:00 PM",Saturday:"8:00 AM to 4:00 PM"},items:"Housewares, Pink, Victoria's Secret, Nike, American Eagle, Hollister and North Face items, teen boys and girls clothing, women's clothing, shoes, Clinique products, sports memorabilia, bobbleheads, Ohio State and Cavaliers items, golf and sports books, and more.",categories:["Housewares and kitchen","Teen clothing","Women's clothing","Shoes and handbags","Sports and golf","Vintage and collectibles","Books"],notes:""},
+  {id:10,address:"1157 Winding Ridge Ave, Louisville, OH 44641",days:["Friday","Saturday","Sunday"],hours:{Friday:null,Saturday:null,Sunday:null},items:"Women's clothes, handbags, furniture, bicycles, mirrors, and more.",categories:["Women's clothing","Shoes and handbags","Furniture","Outdoor and patio","Home decor"],notes:""},
+  {id:11,address:"1029 Washington Ave, Louisville, OH 44641",days:["Friday","Saturday","Sunday"],hours:{Friday:"9:00 AM to 4:00 PM",Saturday:"9:00 AM to 4:00 PM",Sunday:"9:00 AM to 4:00 PM"},items:"Men's and women's clothing and shoes, household items, tools, children's books and toys, Fortnite and Roblox items, dog crate, and more.",categories:["Men's clothing","Women's clothing","Shoes and handbags","Housewares and kitchen","Tools and lawn equipment","Books","Toys and games","Pet items"],notes:""},
+  {id:12,address:"420 South Nickelplate, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"9:00 AM to 3:00 PM",Saturday:"9:00 AM to 3:00 PM"},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
+  {id:13,address:"Rick Black Studio, 927 Main St, Louisville, OH 44641",days:[],hours:{},items:"Multi family household items, decor, bags and totes, scrapbooking items, games, clothing, backdrops, two clothing steamers, bar stools, chairs, photography lights, photography light boxes, picture frames, and more.",categories:["Housewares and kitchen","Home decor","Shoes and handbags","Crafts and scrapbooking","Toys and games","Furniture","Party and wedding items","Electronics and appliances","Miscellaneous"],notes:"Multi family sale. Date and time not listed."},
+  {id:14,address:"1268 Baier Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday","Sunday"],hours:{Thursday:"8:00 AM to 3:00 PM",Friday:"8:00 AM to 3:00 PM",Saturday:"8:00 AM to 3:00 PM",Sunday:"8:00 AM to 3:00 PM"},items:"Women's clothing, teenage boys clothing, toddler boys and girls clothing, games, puzzles, craft items and supplies, full size bed frame and headboard, Avon products, and more.",categories:["Women's clothing","Teen clothing","Baby and toddler","Toys and games","Crafts and scrapbooking","Furniture"],notes:""},
+  {id:15,address:"206 Mercier St, Louisville, OH 44641",days:[],hours:{},items:"A variety of items from a former eBay seller who is clearing out space.",categories:["Vintage and collectibles","Miscellaneous"],notes:"Date and time not listed."},
+  {id:16,address:"1405 East Main St, Louisville, OH 44641",days:[],hours:{},items:"Furniture, stands, dresser, outdoor umbrella, canopy, couch and loveseat, clothing, decor, kitchen items, bikes, scooters, golf clubs, board games, baseball bats, winter clothing, coats, snow pants, boots, and more.",categories:["Furniture","Outdoor and patio","Home decor","Housewares and kitchen","Sports and golf","Toys and games","Miscellaneous"],notes:"Date and time not listed."},
+  {id:17,address:"6330 Peach St, Louisville, OH 44641",days:["Friday","Saturday","Sunday"],hours:{Friday:"8:00 AM to 5:00 PM",Saturday:"8:00 AM to 5:00 PM",Sunday:"8:00 AM to 5:00 PM"},items:"All kinds of items. Everything must go.",categories:["Miscellaneous"],notes:"Located at the corner of Fruitland Rd."},
+  {id:18,address:"1709 Edmar Street, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:null,Friday:null,Saturday:null},items:"Moving sale with lots of items, including vintage items.",categories:["Vintage and collectibles","Miscellaneous"],notes:"Moving sale"},
+  {id:19,address:"1415 Sturbridge Dr, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"9:00 AM to 2:00 PM",Saturday:"9:00 AM to 2:00 PM"},items:"Propane tanks, hoses and connectors, Blue Ox tow bar, Raleigh women's bike, wireless pet fence, patio umbrella, Cosori countertop combination convection air fryer, cast iron skillet, lamps, household items, camping supplies, and more.",categories:["Camping and automotive","Outdoor and patio","Electronics and appliances","Housewares and kitchen","Home decor","Pet items"],notes:""},
+  {id:20,address:"513 Brookfield St, Louisville, OH 44641",days:["Wednesday","Thursday","Friday","Saturday"],hours:{Wednesday:"4:00 PM to 8:00 PM",Thursday:"8:00 AM to 8:00 PM",Friday:"8:00 AM to 8:00 PM",Saturday:"9:00 AM to 12:00 PM"},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
+  {id:21,address:"1122 E Broad St, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:null,Saturday:null},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
+  {id:22,address:"514 Pearwood Place, Louisville, OH 44641",days:["Saturday","Sunday"],hours:{Saturday:"9:00 AM to 5:00 PM",Sunday:"9:00 AM to 5:00 PM"},items:"Tools, books, craft items, old school desk, and miscellaneous items.",categories:["Tools and lawn equipment","Books","Crafts and scrapbooking","Furniture","Miscellaneous"],notes:""},
+  {id:23,address:"911 East Reno Drive, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:null,Saturday:null},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
+  {id:24,address:"1020 N Chapel, Louisville, OH 44641",days:[],hours:{},items:"Items were not listed.",categories:["Miscellaneous"],notes:"Date and time not listed."},
+  {id:25,address:"916 Romary Ln, Louisville, OH 44641",days:[],hours:{},items:"Household decor, vintage items, and toys.",categories:["Home decor","Vintage and collectibles","Toys and games"],notes:"Date and time not listed."},
+  {id:26,address:"1004 Park Village Dr, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"8:00 AM to 4:30 PM",Saturday:"8:00 AM to 4:30 PM"},items:"Furniture, home decor, lighting, patio set, yard games, and more.",categories:["Furniture","Home decor","Electronics and appliances","Outdoor and patio","Toys and games"],notes:""},
+  {id:27,address:"3771 Chestnut Rdg, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:null,Friday:null,Saturday:null},items:"Cribs, baby clothes, Little Sleepies, toys, books, and more.",categories:["Baby and toddler","Kids clothing","Toys and games","Books"],notes:""},
+  {id:28,address:"8881 Rue Helena St, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"8:00 AM to 5:00 PM",Saturday:"8:00 AM to 5:00 PM"},items:"Multi family garage sale. Items were not listed.",categories:["Miscellaneous"],notes:"Multi family sale. No early birds."}
+];
+
+const ALL_CATEGORIES = [
+  "Baby and toddler","Kids clothing","Teen clothing","Women's clothing","Men's clothing",
+  "Shoes and handbags","Toys and games","Books","Furniture","Home decor",
+  "Housewares and kitchen","Tools and lawn equipment","Outdoor and patio",
+  "Crafts and scrapbooking","Electronics and appliances","Sports and golf",
+  "Vintage and collectibles","Party and wedding items","Camping and automotive",
+  "Pet items","Miscellaneous"
+];
+
+// Day name -> date mapping for the sale week
+const DAY_DATES = {
+  Wednesday: new Date(2026, 5, 10),
+  Thursday:  new Date(2026, 5, 11),
+  Friday:    new Date(2026, 5, 12),
+  Saturday:  new Date(2026, 5, 13),
+  Sunday:    new Date(2026, 5, 14)
+};
+
+// Known approximate coordinates for Louisville OH addresses (geocoded manually)
+const COORDS = {
+  1:  [40.8371, -81.2614],
+  2:  [40.8388, -81.2540],
+  3:  [40.8369, -81.2571],
+  4:  [40.8308, -81.2356],
+  5:  [40.8394, -81.2588],
+  6:  [40.8292, -81.2355],
+  7:  [40.8360, -81.2630],
+  8:  [40.8296, -81.2365],
+  9:  [40.8282, -81.2385],
+  10: [40.8410, -81.2572],
+  11: [40.8368, -81.2573],
+  12: [40.8329, -81.2607],
+  13: [40.8350, -81.2606],
+  14: [40.8395, -81.2558],
+  15: [40.8340, -81.2618],
+  16: [40.8350, -81.2548],
+  17: [40.8229, -81.2498],
+  18: [40.8375, -81.2595],
+  19: [40.8405, -81.2582],
+  20: [40.8374, -81.2616],
+  21: [40.8357, -81.2545],
+  22: [40.8387, -81.2608],
+  23: [40.8359, -81.2538],
+  24: [40.8391, -81.2628],
+  25: [40.8362, -81.2569],
+  26: [40.8402, -81.2575],
+  27: [40.8320, -81.2530],
+  28: [40.8270, -81.2340]
+};
+
+// ==================== STATE ====================
+let state = {
+  selectedDay: 'any',
+  selectedTime: 'any',
+  selectedCats: [],
+  keyword: '',
+  favOnly: false,
+  sortBy: 'num',
+  favorites: JSON.parse(localStorage.getItem('ys_favs') || '[]'),
+  route: JSON.parse(localStorage.getItem('ys_route') || '[]'),
+  userLat: null,
+  userLng: null,
+  mapReady: false
+};
+
+// ==================== TIME HELPERS ====================
+function parseTimeStr(str) {
+  // Returns minutes since midnight, or null
+  if (!str) return null;
+  const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return null;
+  let h = parseInt(m[1]), min = parseInt(m[2]);
+  const ap = m[3].toUpperCase();
+  if (ap === 'PM' && h !== 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+function parseHourRange(str) {
+  if (!str) return null;
+  const parts = str.split(' to ');
+  if (parts.length !== 2) return null;
+  const open = parseTimeStr(parts[0].trim());
+  const close = parseTimeStr(parts[1].trim());
+  if (open === null || close === null) return null;
+  return { open, close };
+}
+
+function getNowEST() {
+  // Get current time in EST (UTC-5 for EST, UTC-4 for EDT -- June is EDT = UTC-4)
+  const now = new Date();
+  // June is always EDT (UTC-4)
+  const estMs = now.getTime() + (now.getTimezoneOffset() * 60000) - (4 * 3600000);
+  return new Date(estMs);
+}
+
+function getTodayDayName() {
+  const d = getNowEST();
+  return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()];
+}
+
+function getNowMinutes() {
+  const d = getNowEST();
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+function getSaleStatus(sale) {
+  // Returns: 'open', 'closing_soon', 'later_today', 'closed_today', 'upcoming', 'no_date', 'no_time'
+  const today = getTodayDayName();
+  const nowMin = getNowMinutes();
+  const nowEST = getNowEST();
+  const nowDate = new Date(nowEST.getFullYear(), nowEST.getMonth(), nowEST.getDate());
+
+  if (sale.days.length === 0) return 'no_date';
+
+  const todayInSale = sale.days.includes(today);
+  if (todayInSale) {
+    const hoursStr = sale.hours[today];
+    if (hoursStr === null || hoursStr === undefined) return 'no_time';
+    const range = parseHourRange(hoursStr);
+    if (!range) return 'no_time';
+    if (nowMin < range.open) return 'later_today';
+    if (nowMin >= range.close) return 'closed_today';
+    if (nowMin >= range.open && nowMin <= range.close) {
+      if (range.close - nowMin <= 30) return 'closing_soon';
+      return 'open';
+    }
+  }
+
+  // Is any day upcoming?
+  for (const d of sale.days) {
+    const dayDate = DAY_DATES[d];
+    if (!dayDate) continue;
+    if (dayDate > nowDate) return 'upcoming';
+  }
+
+  return 'closed_today';
+}
+
+function getSaleTodayHoursStr(sale) {
+  const today = getTodayDayName();
+  if (!sale.days.includes(today)) return null;
+  const h = sale.hours[today];
+  if (h === null || h === undefined) return 'Time not listed';
+  return h;
+}
+
+function getOpenMinuteForDay(sale, day) {
+  const h = sale.hours[day];
+  if (!h) return 9999;
+  const r = parseHourRange(h);
+  return r ? r.open : 9999;
+}
+
+function getCloseMinuteForDay(sale, day) {
+  const h = sale.hours[day];
+  if (!h) return 9999;
+  const r = parseHourRange(h);
+  return r ? r.close : 9999;
+}
+
+// ==================== FILTER + SORT ====================
+function matchesFilters(sale) {
+  // Day filter
+  if (state.selectedDay !== 'any') {
+    if (!sale.days.includes(state.selectedDay)) return false;
+  }
+
+  // Time filter
+  if (state.selectedTime !== 'any') {
+    if (state.selectedTime === 'open') {
+      const s = getSaleStatus(sale);
+      if (s !== 'open' && s !== 'closing_soon') return false;
+    } else if (state.selectedTime === 'notime') {
+      // Sales with at least one null hour on selected days
+      const daysToCheck = state.selectedDay !== 'any'
+        ? (sale.days.includes(state.selectedDay) ? [state.selectedDay] : [])
+        : sale.days;
+      if (daysToCheck.length === 0) return false;
+      const hasNoTime = daysToCheck.some(d => sale.hours[d] === null || sale.hours[d] === undefined);
+      if (!hasNoTime) return false;
+    } else {
+      // morning / afternoon / evening
+      const daysToCheck = state.selectedDay !== 'any'
+        ? (sale.days.includes(state.selectedDay) ? [state.selectedDay] : [])
+        : sale.days;
+      if (daysToCheck.length === 0) return false;
+      let anyMatch = false;
+      for (const d of daysToCheck) {
+        const h = sale.hours[d];
+        if (!h) continue;
+        const r = parseHourRange(h);
+        if (!r) continue;
+        if (state.selectedTime === 'morning' && r.open < 720) { anyMatch = true; break; }
+        if (state.selectedTime === 'afternoon' && r.open < 1020 && r.close > 720) { anyMatch = true; break; }
+        if (state.selectedTime === 'evening' && r.close >= 1020) { anyMatch = true; break; }
+      }
+      if (!anyMatch) return false;
+    }
+  }
+
+  // Category filter
+  if (state.selectedCats.length > 0) {
+    const hasAll = state.selectedCats.every(c => sale.categories.includes(c));
+    const hasAny = state.selectedCats.some(c => sale.categories.includes(c));
+    if (!hasAny) return false;
+  }
+
+  // Keyword
+  if (state.keyword.trim()) {
+    const kw = state.keyword.trim().toLowerCase();
+    const searchStr = [sale.address, sale.items, sale.categories.join(' '), sale.notes].join(' ').toLowerCase();
+    if (!searchStr.includes(kw)) return false;
+  }
+
+  // Favorites only
+  if (state.favOnly && !state.favorites.includes(sale.id)) return false;
+
+  return true;
+}
+
+function sortSales(filtered) {
+  const today = getTodayDayName();
+  const arr = [...filtered];
+  if (state.sortBy === 'num') return arr;
+  if (state.sortBy === 'addr') return arr.sort((a,b) => a.address.localeCompare(b.address));
+  if (state.sortBy === 'fav') {
+    return arr.sort((a,b) => {
+      const af = state.favorites.includes(a.id) ? 0 : 1;
+      const bf = state.favorites.includes(b.id) ? 0 : 1;
+      return af - bf || a.id - b.id;
+    });
+  }
+  if (state.sortBy === 'earliest') {
+    return arr.sort((a,b) => {
+      const dayA = state.selectedDay !== 'any' ? state.selectedDay : (a.days[0] || 'ZZZ');
+      const dayB = state.selectedDay !== 'any' ? state.selectedDay : (b.days[0] || 'ZZZ');
+      return getOpenMinuteForDay(a, dayA) - getOpenMinuteForDay(b, dayB) || a.id - b.id;
+    });
+  }
+  if (state.sortBy === 'closing') {
+    return arr.sort((a,b) => {
+      const dayA = state.selectedDay !== 'any' ? state.selectedDay : (a.days[0] || 'ZZZ');
+      const dayB = state.selectedDay !== 'any' ? state.selectedDay : (b.days[0] || 'ZZZ');
+      return getCloseMinuteForDay(a, dayA) - getCloseMinuteForDay(b, dayB) || a.id - b.id;
+    });
+  }
+  if (state.sortBy === 'items') {
+    return arr.sort((a,b) => {
+      if (a.items === 'Items were not listed.') return 1;
+      if (b.items === 'Items were not listed.') return -1;
+      return b.items.length - a.items.length || a.id - b.id;
+    });
+  }
+  if (state.sortBy === 'closest' && state.userLat !== null) {
+    return arr.sort((a,b) => {
+      const ca = COORDS[a.id]; const cb = COORDS[b.id];
+      const da = ca ? Math.hypot(ca[0]-state.userLat, ca[1]-state.userLng) : 9999;
+      const db = cb ? Math.hypot(cb[0]-state.userLat, cb[1]-state.userLng) : 9999;
+      return da - db;
+    });
+  }
+  return arr;
+}
+
+// ==================== STATUS BADGE ====================
+function statusBadgeHTML(status) {
+  const map = {
+    open: '<span class="badge badge-open" aria-label="Open now">Open Now</span>',
+    closing_soon: '<span class="badge badge-soon" aria-label="Closing soon">Closing Soon</span>',
+    later_today: '<span class="badge badge-later" aria-label="Opens later today">Opens Later Today</span>',
+    closed_today: '<span class="badge badge-closed" aria-label="Closed for today">Closed Today</span>',
+    upcoming: '<span class="badge badge-later" aria-label="Open on an upcoming day">Upcoming</span>',
+    no_date: '<span class="badge badge-nodate" aria-label="Date not listed">Date Not Listed</span>',
+    no_time: '<span class="badge badge-notime" aria-label="Time not listed">Time Not Listed</span>'
+  };
+  return map[status] || '';
+}
+
+function markerColor(status) {
+  return {
+    open: '#1e6e1e',
+    closing_soon: '#9e6b00',
+    later_today: '#1a5c7a',
+    closed_today: '#5a5a5a',
+    upcoming: '#b85c38',
+    no_date: '#7a5a9a',
+    no_time: '#7a5a9a'
+  }[status] || '#555';
+}
+
+// ==================== CARD RENDERING ====================
+function hoursListHTML(sale) {
+  if (sale.days.length === 0) return '<div class="card-hours"><em>Date not listed</em></div>';
+  let html = '<div class="card-hours">';
+  for (const d of sale.days) {
+    const h = sale.hours[d];
+    const label = d === 'Wednesday' ? 'Wed 6/10' : d === 'Thursday' ? 'Thu 6/11' :
+      d === 'Friday' ? 'Fri 6/12' : d === 'Saturday' ? 'Sat 6/13' : d === 'Sunday' ? 'Sun 6/14' : d;
+    html += `<div class="hour-row"><span class="hour-day">${label}:</span> ${h || '<em>Time not listed</em>'}</div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function directionsURL(address) {
+  return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address);
+}
+
+function renderCard(sale) {
+  const status = getSaleStatus(sale);
+  const isFav = state.favorites.includes(sale.id);
+  const inRoute = state.route.includes(sale.id);
+
+  const badges = [statusBadgeHTML(status)];
+  if (sale.notes.toLowerCase().includes('multi family')) badges.push('<span class="badge badge-multi">Multi Family</span>');
+  if (sale.notes.toLowerCase().includes('moving')) badges.push('<span class="badge badge-moving">Moving Sale</span>');
+  if (sale.notes.toLowerCase().includes('no early')) badges.push('<span class="badge badge-noearly">No Early Birds</span>');
+
+  const catTags = sale.categories.map(c => `<span class="cat-tag">${c}</span>`).join('');
+
+  const div = document.createElement('div');
+  div.className = 'sale-card';
+  div.dataset.id = sale.id;
+  div.setAttribute('tabindex', '0');
+  div.setAttribute('aria-label', `Sale ${sale.id}: ${sale.address}`);
+
+  div.innerHTML = `
+    <div class="card-header">
+      <div class="sale-num" aria-hidden="true">${sale.id}</div>
+      <div class="card-addr">${sale.address}</div>
+      <div class="card-actions">
+        <button class="icon-btn fav-btn ${isFav ? 'fav-active' : ''}" data-id="${sale.id}" aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}" aria-pressed="${isFav}" title="${isFav ? 'Remove favorite' : 'Add to favorites'}">♥</button>
+        <button class="icon-btn route-btn ${inRoute ? 'route-active' : ''}" data-id="${sale.id}" aria-label="${inRoute ? 'Remove from route' : 'Add to route'}" aria-pressed="${inRoute}" title="${inRoute ? 'Remove from route' : 'Add to route'}">🗺</button>
+      </div>
+    </div>
+    <div class="badges">${badges.join('')}</div>
+    ${hoursListHTML(sale)}
+    <div class="card-cats">${catTags}</div>
+    <div class="card-items">${sale.items}</div>
+    ${sale.notes ? `<div class="card-notes">📌 ${sale.notes}</div>` : ''}
+    <div class="card-dirs">
+      <a href="${directionsURL(sale.address)}" target="_blank" rel="noopener" aria-label="Get directions to ${sale.address} in Google Maps">📍 Directions</a>
+    </div>
+  `;
+
+  div.querySelector('.fav-btn').addEventListener('click', (e) => { e.stopPropagation(); toggleFav(sale.id); });
+  div.querySelector('.route-btn').addEventListener('click', (e) => { e.stopPropagation(); toggleRoute(sale.id); });
+  div.addEventListener('click', () => focusMapMarker(sale.id));
+  div.addEventListener('keypress', (e) => { if (e.key === 'Enter') focusMapMarker(sale.id); });
+
+  return div;
+}
+
+// ==================== MAP ====================
+let map = null;
+let markers = {};
+
+function initMap() {
+  try {
+    map = L.map('map', { zoomControl: true }).setView([40.8360, -81.2580], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(map);
+    state.mapReady = true;
+    renderMarkers();
+  } catch (e) {
+    document.getElementById('map').style.display = 'none';
+    document.getElementById('map-fallback').style.display = 'block';
+    document.getElementById('map-fallback').innerHTML = '<strong>Map could not be loaded.</strong> All sale listings and directions links are available in the list below.';
+  }
+}
+
+function createMarkerIcon(num, status) {
+  const color = markerColor(status);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="38" viewBox="0 0 32 38">
+    <path d="M16 0C7.2 0 0 7.2 0 16c0 11 14 22 16 22s16-11 16-22C32 7.2 24.8 0 16 0z" fill="${color}" stroke="white" stroke-width="2"/>
+    <circle cx="16" cy="16" r="10" fill="white" opacity="0.9"/>
+    <text x="16" y="21" text-anchor="middle" font-size="${num > 9 ? '9' : '11'}" font-weight="bold" fill="${color}" font-family="Georgia,serif">${num}</text>
+  </svg>`;
+  return L.divIcon({
+    html: svg,
+    className: '',
+    iconSize: [32, 38],
+    iconAnchor: [16, 38],
+    popupAnchor: [0, -38]
+  });
+}
+
+function popupHTML(sale) {
+  const status = getSaleStatus(sale);
+  const isFav = state.favorites.includes(sale.id);
+  const inRoute = state.route.includes(sale.id);
+  let hoursStr = '';
+  if (sale.days.length === 0) { hoursStr = '<em>Date not listed</em>'; }
+  else {
+    hoursStr = sale.days.map(d => {
+      const label = {Wednesday:'Wed 6/10',Thursday:'Thu 6/11',Friday:'Fri 6/12',Saturday:'Sat 6/13',Sunday:'Sun 6/14'}[d] || d;
+      const h = sale.hours[d];
+      return `<b>${label}:</b> ${h || 'Time not listed'}`;
+    }).join('<br>');
+  }
+  const badges = [statusBadgeHTML(status)];
+  if (sale.notes.toLowerCase().includes('multi family')) badges.push('<span class="badge badge-multi">Multi Family</span>');
+  if (sale.notes.toLowerCase().includes('moving')) badges.push('<span class="badge badge-moving">Moving Sale</span>');
+  if (sale.notes.toLowerCase().includes('no early')) badges.push('<span class="badge badge-noearly">No Early Birds</span>');
+
+  return `
+    <div class="popup-title">#${sale.id} &mdash; ${sale.address}</div>
+    <div class="popup-badges">${badges.join(' ')}</div>
+    <div class="popup-text">${hoursStr}</div>
+    <div class="popup-text" style="margin-top:5px">${sale.categories.join(', ')}</div>
+    <div class="popup-text" style="margin-top:5px">${sale.items}</div>
+    ${sale.notes ? `<div class="popup-text" style="color:#B85C38;margin-top:4px;font-style:italic">📌 ${sale.notes}</div>` : ''}
+    <a href="${directionsURL(sale.address)}" target="_blank" class="popup-link">📍 Get Directions in Google Maps</a>
+    <div class="popup-actions">
+      <button class="popup-btn popup-btn-fav" onclick="toggleFavPopup(${sale.id})">${isFav ? '♥ Saved' : '♡ Save'}</button>
+      <button class="popup-btn popup-btn-route" onclick="toggleRoutePopup(${sale.id})">${inRoute ? '🗺 In Route' : '🗺 Add to Route'}</button>
+    </div>`;
+}
+
+function renderMarkers() {
+  if (!state.mapReady) return;
+  // Remove old markers
+  Object.values(markers).forEach(m => m.remove());
+  markers = {};
+
+  const filtered = getFiltered();
+  const filteredIds = new Set(filtered.map(s => s.id));
+
+  sales.forEach(sale => {
+    const coords = COORDS[sale.id];
+    if (!coords) return;
+    const status = getSaleStatus(sale);
+    const icon = createMarkerIcon(sale.id, status);
+    const m = L.marker(coords, {
+      icon,
+      opacity: filteredIds.has(sale.id) ? 1 : 0.25,
+      title: `Sale ${sale.id}: ${sale.address}`
+    }).addTo(map);
+    m.bindPopup(popupHTML(sale), { maxWidth: 290 });
+    m.on('click', () => {
+      highlightCard(sale.id);
+    });
+    markers[sale.id] = m;
+  });
+}
+
+function focusMapMarker(id) {
+  if (!state.mapReady || !markers[id]) return;
+  const coords = COORDS[id];
+  if (coords) map.setView(coords, 16);
+  markers[id].openPopup();
+  highlightCard(id);
+}
+
+function highlightCard(id) {
+  document.querySelectorAll('.sale-card').forEach(c => c.classList.remove('highlighted'));
+  const el = document.querySelector(`.sale-card[data-id="${id}"]`);
+  if (el) {
+    el.classList.add('highlighted');
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function toggleFavPopup(id) {
+  toggleFav(id);
+  // Re-render popup
+  if (markers[id] && markers[id].isPopupOpen()) {
+    const sale = sales.find(s => s.id === id);
+    markers[id].setPopupContent(popupHTML(sale));
+  }
+}
+function toggleRoutePopup(id) {
+  toggleRoute(id);
+  if (markers[id] && markers[id].isPopupOpen()) {
+    const sale = sales.find(s => s.id === id);
+    markers[id].setPopupContent(popupHTML(sale));
+  }
+}
+
+// ==================== FAVORITES ====================
+function toggleFav(id) {
+  const idx = state.favorites.indexOf(id);
+  if (idx >= 0) state.favorites.splice(idx, 1);
+  else state.favorites.push(id);
+  localStorage.setItem('ys_favs', JSON.stringify(state.favorites));
+  render();
+}
+
+// ==================== ROUTE ====================
+function toggleRoute(id) {
+  const idx = state.route.indexOf(id);
+  if (idx >= 0) state.route.splice(idx, 1);
+  else state.route.push(id);
+  localStorage.setItem('ys_route', JSON.stringify(state.route));
+  renderRoute();
+  render();
+}
+
+function renderRoute() {
+  const panel = document.getElementById('route-panel');
+  const list = document.getElementById('route-stops');
+  const countEl = document.getElementById('route-count-num');
+  const countStatus = document.getElementById('route-count-status');
+
+  list.innerHTML = '';
+  if (state.route.length === 0) {
+    panel.classList.remove('visible');
+    countStatus.style.display = 'none';
+    return;
+  }
+  panel.classList.add('visible');
+  countStatus.style.display = 'inline';
+  countEl.textContent = state.route.length;
+
+  state.route.forEach((id, idx) => {
+    const sale = sales.find(s => s.id === id);
+    if (!sale) return;
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <span class="route-stop-num">${idx + 1}</span>
+      <span style="flex:1;font-size:0.75rem">#${sale.id} ${sale.address.split(',')[0]}</span>
+      <button class="route-stop-up" title="Move up" onclick="moveStop(${id},-1)" aria-label="Move stop up">▲</button>
+      <button class="route-stop-down" title="Move down" onclick="moveStop(${id},1)" aria-label="Move stop down">▼</button>
+      <button class="route-stop-remove" onclick="toggleRoute(${id})" aria-label="Remove stop">✕</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+function moveStop(id, dir) {
+  const idx = state.route.indexOf(id);
+  if (idx < 0) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= state.route.length) return;
+  state.route.splice(idx, 1);
+  state.route.splice(newIdx, 0, id);
+  localStorage.setItem('ys_route', JSON.stringify(state.route));
+  renderRoute();
+}
+
+function openRoute() {
+  if (state.route.length === 0) return;
+  const addrs = state.route.map(id => {
+    const sale = sales.find(s => s.id === id);
+    return sale ? encodeURIComponent(sale.address) : null;
+  }).filter(Boolean);
+
+  if (addrs.length === 1) {
+    window.open('https://www.google.com/maps/dir/?api=1&destination=' + addrs[0], '_blank');
+    return;
+  }
+  // Google Maps supports destination + waypoints
+  const dest = addrs[addrs.length - 1];
+  const waypoints = addrs.slice(0, -1).join('|');
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${dest}&waypoints=${waypoints}`;
+  window.open(url, '_blank');
+}
+
+// ==================== RENDER ====================
+function getFiltered() {
+  return sortSales(sales.filter(matchesFilters));
+}
+
+function render() {
+  const filtered = getFiltered();
+  const list = document.getElementById('sale-list');
+  const empty = document.getElementById('empty-state');
+  const countEl = document.getElementById('match-count');
+
+  countEl.textContent = filtered.length;
+  list.innerHTML = '';
+
+  if (filtered.length === 0) {
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    filtered.forEach(sale => list.appendChild(renderCard(sale)));
+  }
+
+  renderMarkers();
+}
+
+// ==================== FILTER UI ====================
+function buildCategoryFilters() {
+  const wrap = document.getElementById('cat-wrap');
+  wrap.innerHTML = '';
+  ALL_CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-pill' + (state.selectedCats.includes(cat) ? ' active' : '');
+    btn.textContent = cat;
+    btn.setAttribute('aria-pressed', state.selectedCats.includes(cat));
+    btn.setAttribute('aria-label', `Filter by ${cat}`);
+    btn.addEventListener('click', () => {
+      const idx = state.selectedCats.indexOf(cat);
+      if (idx >= 0) state.selectedCats.splice(idx, 1);
+      else state.selectedCats.push(cat);
+      buildCategoryFilters();
+      render();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+function resetFilters() {
+  state.selectedDay = 'any';
+  state.selectedTime = 'any';
+  state.selectedCats = [];
+  state.keyword = '';
+  state.favOnly = false;
+  state.sortBy = 'num';
+  document.getElementById('keyword-search').value = '';
+  document.getElementById('sort-select').value = 'num';
+
+  document.querySelectorAll('#day-filters .pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.day === 'any');
+    p.setAttribute('aria-pressed', p.dataset.day === 'any');
+  });
+  document.querySelectorAll('#time-filters .pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.time === 'any');
+    p.setAttribute('aria-pressed', p.dataset.time === 'any');
+  });
+  document.getElementById('btn-favonly').setAttribute('aria-pressed', 'false');
+  document.getElementById('btn-favonly').classList.remove('active');
+  buildCategoryFilters();
+  render();
+}
+
+// ==================== INIT CONTROLS ====================
+function initControls() {
+  // Day pills
+  document.querySelectorAll('#day-filters .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.selectedDay = btn.dataset.day;
+      document.querySelectorAll('#day-filters .pill').forEach(p => {
+        p.classList.toggle('active', p === btn);
+        p.setAttribute('aria-pressed', p === btn ? 'true' : 'false');
+      });
+      render();
+    });
+  });
+
+  // Time pills
+  document.querySelectorAll('#time-filters .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.selectedTime = btn.dataset.time;
+      document.querySelectorAll('#time-filters .pill').forEach(p => {
+        p.classList.toggle('active', p === btn);
+        p.setAttribute('aria-pressed', p === btn ? 'true' : 'false');
+      });
+      render();
+    });
+  });
+
+  // Keyword search
+  let searchTimeout;
+  document.getElementById('keyword-search').addEventListener('input', e => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      state.keyword = e.target.value;
+      render();
+    }, 180);
+  });
+  document.getElementById('search-clear').addEventListener('click', () => {
+    document.getElementById('keyword-search').value = '';
+    state.keyword = '';
+    render();
+  });
+
+  // Sort
+  document.getElementById('sort-select').addEventListener('change', e => {
+    state.sortBy = e.target.value;
+    render();
+  });
+
+  // Fav only
+  document.getElementById('btn-favonly').addEventListener('click', function() {
+    state.favOnly = !state.favOnly;
+    this.setAttribute('aria-pressed', state.favOnly);
+    this.classList.toggle('btn-rust', state.favOnly);
+    this.classList.toggle('btn-outline', !state.favOnly);
+    render();
+  });
+
+  // Reset
+  document.getElementById('btn-reset').addEventListener('click', resetFilters);
+
+  // Clear cats
+  document.getElementById('btn-clear-cats').addEventListener('click', () => {
+    state.selectedCats = [];
+    buildCategoryFilters();
+    render();
+  });
+
+  // Cat expand
+  document.getElementById('cat-toggle').addEventListener('click', function() {
+    const wrap = document.getElementById('cat-wrap');
+    const expanded = wrap.classList.toggle('expanded');
+    this.textContent = expanded ? 'Show fewer ▴' : 'Show all categories ▾';
+    this.setAttribute('aria-expanded', expanded);
+  });
+
+  // View toggle
+  document.querySelectorAll('.view-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = btn.dataset.view;
+      document.body.className = 'view-' + (v === 'both' ? 'both' : v);
+      document.querySelectorAll('.view-toggle button').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      });
+      if (state.mapReady && (v === 'both' || v === 'map')) {
+        setTimeout(() => map.invalidateSize(), 100);
+      }
+    });
+  });
+
+  // Controls toggle (mobile)
+  const toggleBtn = document.getElementById('controls-toggle-btn');
+  const controlsBar = document.getElementById('controls-bar');
+  toggleBtn.addEventListener('click', () => {
+    const collapsed = controlsBar.classList.toggle('collapsed');
+    toggleBtn.setAttribute('aria-expanded', !collapsed);
+    toggleBtn.textContent = collapsed ? '▸ Search & Filters' : '▾ Search & Filters';
+  });
+
+  // Re-center
+  document.getElementById('map-recenter').addEventListener('click', () => {
+    if (state.mapReady) map.setView([40.8360, -81.2580], 13);
+  });
+
+  // Location
+  document.getElementById('btn-location').addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      alert('Location access is not available in your browser.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(pos => {
+      state.userLat = pos.coords.latitude;
+      state.userLng = pos.coords.longitude;
+      document.getElementById('opt-closest').disabled = false;
+      state.sortBy = 'closest';
+      document.getElementById('sort-select').value = 'closest';
+      render();
+    }, () => {
+      alert('Could not get your location. You can still use all other features.');
+    });
+  });
+
+  // Share
+  document.getElementById('btn-share').addEventListener('click', () => {
+    const url = window.location.href;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => alert('Link copied to clipboard!'));
+    } else {
+      prompt('Copy this link:', url);
+    }
+  });
+
+  // Print
+  document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+  // Report modal
+  document.getElementById('btn-report').addEventListener('click', () => {
+    document.getElementById('modal-overlay').classList.add('open');
+    document.getElementById('report-addr').focus();
+  });
+  document.getElementById('modal-cancel').addEventListener('click', () => {
+    document.getElementById('modal-overlay').classList.remove('open');
+  });
+  document.getElementById('modal-submit').addEventListener('click', () => {
+    document.getElementById('modal-overlay').classList.remove('open');
+    alert('Thank you for the update! Sale listings are maintained by community volunteers and changes will be reviewed.');
+    document.getElementById('report-addr').value = '';
+    document.getElementById('report-what').value = '';
+    document.getElementById('report-hours').value = '';
+    document.getElementById('report-items').value = '';
+  });
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) {
+      document.getElementById('modal-overlay').classList.remove('open');
+    }
+  });
+
+  // Route buttons
+  document.getElementById('btn-open-route').addEventListener('click', openRoute);
+  document.getElementById('btn-clear-route').addEventListener('click', () => {
+    state.route = [];
+    localStorage.setItem('ys_route', JSON.stringify(state.route));
+    renderRoute();
+    render();
+  });
+
+  // Keyboard: close modal on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('modal-overlay').classList.remove('open');
+  });
+}
+
+// ==================== BOOT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  buildCategoryFilters();
+  initControls();
+  initMap();
+  renderRoute();
+  render();
+});
+</script>
+</body>
+</html>
