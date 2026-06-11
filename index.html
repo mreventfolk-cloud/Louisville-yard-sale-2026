@@ -669,7 +669,7 @@
   </div>
 
   <div id="status-bar" role="status" aria-live="polite">
-    <div><strong id="match-count">43</strong> sales found</div>
+    <div><strong id="match-count">51</strong> sales found</div>
     <div class="view-toggle" role="group" aria-label="View mode">
       <button class="active" data-view="both" aria-pressed="true">Map + List</button>
       <button data-view="map" aria-pressed="false">Map Only</button>
@@ -787,7 +787,15 @@ const sales = [
   {id:40,address:"917 E Main St, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"8:00 AM to 4:00 PM",Saturday:"8:00 AM to 4:00 PM"},items:"New and used clothing, lots of toys, household goods, purple wagon, foam alphabet pieces, Minnie Mouse kitchen, decor, bags and totes, new pool rafts, and more.",categories:["Men's clothing","Women's clothing","Kids clothing","Toys and games","Housewares and kitchen","Home decor","Shoes and handbags","Outdoor and patio","Miscellaneous"],notes:"Located in the Stier Israel Funeral Home parking lot."},
   {id:41,address:"713 Mosby Ln, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"9:00 AM to 3:00 PM",Saturday:"9:00 AM to 3:00 PM"},items:"Multiple garage sales throughout the Redwood apartment community.",categories:["Miscellaneous"],notes:"Neighborhood wide apartment community sale at Redwood Louisville."},
   {id:42,address:"1717 Hiram St, Louisville, OH 44641",days:[],hours:{},items:"Baby and toddler items, men's clothing, women's clothing, miscellaneous household items, yard tools, and more.",categories:["Baby and toddler","Kids clothing","Men's clothing","Women's clothing","Housewares and kitchen","Tools and lawn equipment","Miscellaneous"],notes:"Date and time not listed."},
-  {id:43,address:"530 Edwards St, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"8:00 AM to 5:00 PM",Friday:"8:00 AM to 5:00 PM",Saturday:"8:00 AM to 5:00 PM"},items:"Holiday decor, home decor, baby toys, baby bouncer seat, miscellaneous items, and more.",categories:["Baby and toddler","Toys and games","Home decor","Miscellaneous"],notes:""}
+  {id:43,address:"530 Edwards St, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"8:00 AM to 5:00 PM",Friday:"8:00 AM to 5:00 PM",Saturday:"8:00 AM to 5:00 PM"},items:"Holiday decor, home decor, baby toys, baby bouncer seat, miscellaneous items, and more.",categories:["Baby and toddler","Toys and games","Home decor","Miscellaneous"],notes:""},
+  {id:44,address:"1297 N Chapel St, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"9:00 AM to 5:00 PM",Saturday:"9:00 AM to 5:00 PM"},items:"Brand new toys, exercise bike, mini refrigerator, new kids swimming pools, curtains, miscellaneous items, and more.",categories:["Toys and games","Sports and golf","Electronics and appliances","Outdoor and patio","Home decor","Miscellaneous"],notes:""},
+  {id:45,address:"1300 Monter Ave, Louisville, OH 44641",days:["Friday","Saturday","Sunday"],hours:{Friday:"10:00 AM to 6:00 PM",Saturday:"10:00 AM to 6:00 PM",Sunday:"10:00 AM to 6:00 PM"},items:"Baby girls clothing, toddler boys clothing, newborn essentials, and more.",categories:["Baby and toddler","Kids clothing","Miscellaneous"],notes:""},
+  {id:46,address:"1229 Washington Blvd, Louisville, OH 44641",days:["Friday","Saturday","Sunday"],hours:{Friday:"8:00 AM to 6:00 PM",Saturday:"8:00 AM to 12:00 PM",Sunday:"12:00 PM to 5:00 PM"},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
+  {id:47,address:"2417 Otterbin St, Louisville, OH 44641",days:["Friday"],hours:{Friday:"10:00 AM to 2:00 PM"},items:"Changing table, Disney walker, stroller, miscellaneous items, and more.",categories:["Baby and toddler","Furniture","Miscellaneous"],notes:"Friday only."},
+  {id:48,address:"1232 Baier Ave, Louisville, OH 44641",days:["Friday"],hours:{Friday:"9:00 AM to 4:00 PM"},items:"Kitchen items, two Keurig coffee makers, Corelle dishes, stands, antique lamp, large stuffed child's bear, miscellaneous items, and more.",categories:["Housewares and kitchen","Electronics and appliances","Furniture","Home decor","Vintage and collectibles","Toys and games","Miscellaneous"],notes:"Friday only."},
+  {id:49,address:"5990 Trojan St, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"8:00 AM to 2:00 PM",Saturday:"8:00 AM to 2:00 PM"},items:"Nail gun, saws, vintage bar stools, chisels, Marvel hardcover books, cookie jars, Raggedy Ann items, pull up bar, women's shoes size 6.5, men's dress shirts, plush animals, 1980s dolls, miscellaneous items, and more.",categories:["Tools and lawn equipment","Furniture","Vintage and collectibles","Books","Housewares and kitchen","Sports and golf","Shoes and handbags","Men's clothing","Toys and games","Miscellaneous"],notes:""},
+  {id:50,address:"1855 Vantage Dr, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:null,Friday:null,Saturday:null},items:"Items were not listed.",categories:["Miscellaneous"],notes:"Time not listed."},
+  {id:51,address:"3072 McKimm Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday","Sunday"],hours:{Thursday:"9:00 AM to 5:00 PM",Friday:"9:00 AM to 5:00 PM",Saturday:"9:00 AM to 5:00 PM",Sunday:"9:00 AM to 5:00 PM"},items:"Several patio umbrellas, umbrella stands, ladders, tools, housewares, microwave, Stella d'Oro and elephant ear plants, assorted flower pots, Christmas items, miscellaneous items, and more.",categories:["Outdoor and patio","Tools and lawn equipment","Housewares and kitchen","Electronics and appliances","Home decor","Miscellaneous"],notes:""}
 ];
 
 const ALL_CATEGORIES = [
@@ -852,7 +860,15 @@ const COORDS = {
   40: [40.8351, -81.2551],
   41: [40.8408, -81.2538],
   42: [40.8372, -81.2590],
-  43: [40.8348, -81.2622]
+  43: [40.8348, -81.2622],
+  44: [40.8396, -81.2631],
+  45: [40.8402, -81.2568],
+  46: [40.8372, -81.2574],
+  47: [40.8410, -81.2555],
+  48: [40.8398, -81.2560],
+  49: [40.8255, -81.2430],
+  50: [40.8418, -81.2572],
+  51: [40.8388, -81.2530]
 };
 
 // ==================== STATE ====================
