@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Louisville Community Yard Sale Map – June 10–14, 2026</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MJ3J8FKTK4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MJ3J8FKTK4');
+</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
@@ -661,7 +669,7 @@
   </div>
 
   <div id="status-bar" role="status" aria-live="polite">
-    <div><strong id="match-count">37</strong> sales found</div>
+    <div><strong id="match-count">43</strong> sales found</div>
     <div class="view-toggle" role="group" aria-label="View mode">
       <button class="active" data-view="both" aria-pressed="true">Map + List</button>
       <button data-view="map" aria-pressed="false">Map Only</button>
@@ -744,12 +752,12 @@ const sales = [
   {id:5,address:"2134 Hillocke St, Louisville, OH 44641",days:["Thursday","Saturday"],hours:{Thursday:"9:00 AM to 5:00 PM",Saturday:"9:00 AM to 2:00 PM"},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
   {id:6,address:"5643 Ault Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"8:00 AM to 3:00 PM",Friday:"8:00 AM to 3:00 PM",Saturday:"8:00 AM to 3:00 PM"},items:"Two XL dog crates, go cart, Boss salt spreader, holiday items, clothing, decor, and more.",categories:["Pet items","Camping and automotive","Tools and lawn equipment","Home decor","Miscellaneous"],notes:""},
   {id:7,address:"1020 Wellman St, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"9:00 AM to 5:00 PM",Friday:"9:00 AM to 5:00 PM",Saturday:"9:00 AM to 5:00 PM"},items:"Men's shirts size 2XL and up, men's shorts and pants size 40 and up, women's clothes, golf clubs, cabinet, home decor, and more.",categories:["Men's clothing","Women's clothing","Sports and golf","Furniture","Home decor"],notes:""},
-  {id:8,address:"5468 Brook Run Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"9:00 AM to 2:00 PM",Friday:"9:00 AM to 2:00 PM",Saturday:"9:00 AM to 2:00 PM"},items:"Multi family sale.",categories:["Miscellaneous"],notes:"Multi family sale"},
+  {id:8,address:"5468 Brook Run Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"9:00 AM to 2:00 PM",Friday:"9:00 AM to 2:00 PM",Saturday:"9:00 AM to 2:00 PM"},items:"Kitchen items, home decor, clothing, holiday items, books, miscellaneous items, and more.",categories:["Housewares and kitchen","Home decor","Men's clothing","Women's clothing","Kids clothing","Books","Miscellaneous"],notes:"Multi family sale."},
   {id:9,address:"5383 Broadway Ave, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"8:00 AM to 4:00 PM",Saturday:"8:00 AM to 4:00 PM"},items:"Housewares, Pink, Victoria's Secret, Nike, American Eagle, Hollister and North Face items, teen boys and girls clothing, women's clothing, shoes, Clinique products, sports memorabilia, bobbleheads, Ohio State and Cavaliers items, golf and sports books, and more.",categories:["Housewares and kitchen","Teen clothing","Women's clothing","Shoes and handbags","Sports and golf","Vintage and collectibles","Books"],notes:""},
   {id:10,address:"1157 Winding Ridge Ave, Louisville, OH 44641",days:["Friday","Saturday","Sunday"],hours:{Friday:null,Saturday:null,Sunday:null},items:"Women's clothes, handbags, furniture, bicycles, mirrors, and more.",categories:["Women's clothing","Shoes and handbags","Furniture","Outdoor and patio","Home decor"],notes:""},
   {id:11,address:"1029 Washington Ave, Louisville, OH 44641",days:["Friday","Saturday","Sunday"],hours:{Friday:"9:00 AM to 4:00 PM",Saturday:"9:00 AM to 4:00 PM",Sunday:"9:00 AM to 4:00 PM"},items:"Men's and women's clothing and shoes, household items, tools, children's books and toys, Fortnite and Roblox items, dog crate, and more.",categories:["Men's clothing","Women's clothing","Shoes and handbags","Housewares and kitchen","Tools and lawn equipment","Books","Toys and games","Pet items"],notes:""},
   {id:12,address:"420 South Nickelplate, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"9:00 AM to 3:00 PM",Saturday:"9:00 AM to 3:00 PM"},items:"Furniture, art, compressor, books, microwave, miscellaneous items, and more.",categories:["Furniture","Home decor","Tools and lawn equipment","Books","Electronics and appliances","Miscellaneous"],notes:"Any reasonable offers will be appreciated."},
-  {id:13,address:"Rick Black Studio, 927 Main St, Louisville, OH 44641",days:[],hours:{},items:"Multi family household items, decor, bags and totes, scrapbooking items, games, clothing, backdrops, two clothing steamers, bar stools, chairs, photography lights, photography light boxes, picture frames, and more.",categories:["Housewares and kitchen","Home decor","Shoes and handbags","Crafts and scrapbooking","Toys and games","Furniture","Party and wedding items","Electronics and appliances","Miscellaneous"],notes:"Multi family sale. Date and time not listed."},
+  {id:13,address:"Rick Black Studio, 927 Main St, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"8:00 AM to 2:00 PM",Friday:"8:00 AM to 2:00 PM",Saturday:"8:00 AM to 2:00 PM"},items:"Multi family household items, decor, bags and totes, scrapbooking items, games, clothing, backdrops, two clothing steamers, bar stools, chairs, photography lights, photography light boxes, picture frames, and more.",categories:["Housewares and kitchen","Home decor","Shoes and handbags","Crafts and scrapbooking","Toys and games","Furniture","Party and wedding items","Electronics and appliances","Miscellaneous"],notes:"Multi family sale."},
   {id:14,address:"1268 Baier Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday","Sunday"],hours:{Thursday:"8:00 AM to 3:00 PM",Friday:"8:00 AM to 3:00 PM",Saturday:"8:00 AM to 3:00 PM",Sunday:"8:00 AM to 3:00 PM"},items:"Women's clothing, teenage boys clothing, toddler boys and girls clothing, games, puzzles, craft items and supplies, full size bed frame and headboard, Avon products, and more.",categories:["Women's clothing","Teen clothing","Baby and toddler","Toys and games","Crafts and scrapbooking","Furniture"],notes:""},
   {id:15,address:"206 Mercier St, Louisville, OH 44641",days:[],hours:{},items:"A variety of items from a former eBay seller who is clearing out space.",categories:["Vintage and collectibles","Miscellaneous"],notes:"Date and time not listed."},
   {id:16,address:"1405 East Main St, Louisville, OH 44641",days:[],hours:{},items:"Furniture, stands, dresser, outdoor umbrella, canopy, couch and loveseat, clothing, decor, kitchen items, bikes, scooters, golf clubs, board games, baseball bats, winter clothing, coats, snow pants, boots, and more.",categories:["Furniture","Outdoor and patio","Home decor","Housewares and kitchen","Sports and golf","Toys and games","Miscellaneous"],notes:"Date and time not listed."},
@@ -760,7 +768,7 @@ const sales = [
   {id:21,address:"1122 E Broad St, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:null,Saturday:null},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
   {id:22,address:"514 Pearwood Place, Louisville, OH 44641",days:["Saturday","Sunday"],hours:{Saturday:"9:00 AM to 5:00 PM",Sunday:"9:00 AM to 5:00 PM"},items:"Tools, books, craft items, old school desk, and miscellaneous items.",categories:["Tools and lawn equipment","Books","Crafts and scrapbooking","Furniture","Miscellaneous"],notes:""},
   {id:23,address:"911 East Reno Drive, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:null,Saturday:null},items:"Items were not listed.",categories:["Miscellaneous"],notes:""},
-  {id:24,address:"1020 N Chapel, Louisville, OH 44641",days:[],hours:{},items:"Items were not listed.",categories:["Miscellaneous"],notes:"Date and time not listed."},
+  {id:24,address:"1020 N Chapel St, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"9:00 AM to 4:00 PM",Friday:"9:00 AM to 4:00 PM",Saturday:"9:00 AM to 4:00 PM"},items:"Toddler boys' name brand clothing in sizes 2T to 3T, women's clothing, football cards, assorted household items, car seat covers, and more.",categories:["Baby and toddler","Kids clothing","Women's clothing","Vintage and collectibles","Housewares and kitchen","Camping and automotive","Miscellaneous"],notes:""},
   {id:25,address:"916 Romary Ln, Louisville, OH 44641",days:[],hours:{},items:"Household decor, vintage items, and toys.",categories:["Home decor","Vintage and collectibles","Toys and games"],notes:"Date and time not listed."},
   {id:26,address:"1004 Park Village Dr, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"8:00 AM to 4:30 PM",Saturday:"8:00 AM to 4:30 PM"},items:"Furniture, home decor, lighting, patio set, yard games, and more.",categories:["Furniture","Home decor","Electronics and appliances","Outdoor and patio","Toys and games"],notes:""},
   {id:27,address:"3771 Chestnut Rdg, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:null,Friday:null,Saturday:null},items:"Cribs, baby clothes, Little Sleepies, toys, books, and more.",categories:["Baby and toddler","Kids clothing","Toys and games","Books"],notes:""},
@@ -773,7 +781,13 @@ const sales = [
   {id:34,address:"511 Pearwood Pl, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:null,Saturday:null},items:"Items were not listed.",categories:["Miscellaneous"],notes:"Time not listed."},
   {id:35,address:"721 Colebrook St, Louisville, OH 44641",days:[],hours:{},items:"Men's, women's, and children's clothing and shoes in sizes XS through 5X, vintage items, household items, electronics, fire pit, bike rack, and men's and women's motorcycle boots.",categories:["Men's clothing","Women's clothing","Kids clothing","Shoes and handbags","Vintage and collectibles","Housewares and kitchen","Electronics and appliances","Outdoor and patio","Camping and automotive","Miscellaneous"],notes:"Date and time not listed."},
   {id:36,address:"8834 Rue Helena St, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"9:00 AM to 4:00 PM",Saturday:"9:00 AM to 4:00 PM"},items:"Books, kids toys and games, women's clothing, housewares, tools, miscellaneous items, and more.",categories:["Books","Toys and games","Women's clothing","Housewares and kitchen","Tools and lawn equipment","Miscellaneous"],notes:"Multi family sale. Something for everyone."},
-  {id:37,address:"304 Shawnee Ave, Louisville, OH 44641",days:["Wednesday","Thursday"],hours:{Wednesday:"8:00 AM to 5:00 PM",Thursday:"8:00 AM to 5:00 PM"},items:"Baby clothing, toddler clothing, maternity clothing, home decor, baby items, and more. Most items are priced at $1.",categories:["Baby and toddler","Kids clothing","Women's clothing","Home decor","Miscellaneous"],notes:"Multi family garage sale. Everything is priced to sell, with most items priced at $1."}
+  {id:37,address:"304 Shawnee Ave, Louisville, OH 44641",days:["Wednesday","Thursday"],hours:{Wednesday:"8:00 AM to 5:00 PM",Thursday:"8:00 AM to 5:00 PM"},items:"Baby clothing, toddler clothing, maternity clothing, home decor, baby items, and more. Most items are priced at $1.",categories:["Baby and toddler","Kids clothing","Women's clothing","Home decor","Miscellaneous"],notes:"Multi family garage sale. Everything is priced to sell, with most items priced at $1."},
+  {id:38,address:"924 E Main St, Louisville, OH 44641",days:["Saturday"],hours:{Saturday:"9:00 AM to 4:00 PM"},items:"Men's and women's clothing in sizes XL through 5X, assorted household items, Pink Zebra and Avon products, books, kitchen items, bags, miscellaneous items, and more.",categories:["Men's clothing","Women's clothing","Housewares and kitchen","Books","Shoes and handbags","Home decor","Miscellaneous"],notes:"Saturday only."},
+  {id:39,address:"2007 Monter Ave, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"8:00 AM to 6:00 PM",Friday:"8:00 AM to 6:00 PM",Saturday:"8:00 AM to 12:00 PM"},items:"Women's clothing in sizes small through 3XL, men's clothing in sizes medium through 2XL, cement anchors and bolts, miscellaneous hardware, patio umbrella, speakers, wooden storm door, and more.",categories:["Women's clothing","Men's clothing","Tools and lawn equipment","Outdoor and patio","Electronics and appliances","Home decor","Miscellaneous"],notes:"Multi family sale."},
+  {id:40,address:"917 E Main St, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"8:00 AM to 4:00 PM",Saturday:"8:00 AM to 4:00 PM"},items:"New and used clothing, lots of toys, household goods, purple wagon, foam alphabet pieces, Minnie Mouse kitchen, decor, bags and totes, new pool rafts, and more.",categories:["Men's clothing","Women's clothing","Kids clothing","Toys and games","Housewares and kitchen","Home decor","Shoes and handbags","Outdoor and patio","Miscellaneous"],notes:"Located in the Stier Israel Funeral Home parking lot."},
+  {id:41,address:"713 Mosby Ln, Louisville, OH 44641",days:["Friday","Saturday"],hours:{Friday:"9:00 AM to 3:00 PM",Saturday:"9:00 AM to 3:00 PM"},items:"Multiple garage sales throughout the Redwood apartment community.",categories:["Miscellaneous"],notes:"Neighborhood wide apartment community sale at Redwood Louisville."},
+  {id:42,address:"1717 Hiram St, Louisville, OH 44641",days:[],hours:{},items:"Baby and toddler items, men's clothing, women's clothing, miscellaneous household items, yard tools, and more.",categories:["Baby and toddler","Kids clothing","Men's clothing","Women's clothing","Housewares and kitchen","Tools and lawn equipment","Miscellaneous"],notes:"Date and time not listed."},
+  {id:43,address:"530 Edwards St, Louisville, OH 44641",days:["Thursday","Friday","Saturday"],hours:{Thursday:"8:00 AM to 5:00 PM",Friday:"8:00 AM to 5:00 PM",Saturday:"8:00 AM to 5:00 PM"},items:"Holiday decor, home decor, baby toys, baby bouncer seat, miscellaneous items, and more.",categories:["Baby and toddler","Toys and games","Home decor","Miscellaneous"],notes:""}
 ];
 
 const ALL_CATEGORIES = [
@@ -832,7 +846,13 @@ const COORDS = {
   34: [40.8385, -81.2610],
   35: [40.8345, -81.2635],
   36: [40.8268, -81.2342],
-  37: [40.8342, -81.2648]
+  37: [40.8342, -81.2648],
+  38: [40.8352, -81.2548],
+  39: [40.8400, -81.2565],
+  40: [40.8351, -81.2551],
+  41: [40.8408, -81.2538],
+  42: [40.8372, -81.2590],
+  43: [40.8348, -81.2622]
 };
 
 // ==================== STATE ====================
@@ -1094,6 +1114,10 @@ function directionsURL(address) {
   return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address);
 }
 
+function directionsHTML(sale) {
+  return `<div class="card-dirs"><a href="${directionsURL(sale.address)}" target="_blank" rel="noopener" aria-label="Get directions to ${sale.address} in Google Maps">📍 Directions</a></div>`;
+}
+
 function renderCard(sale) {
   const status = getSaleStatus(sale);
   const isFav = state.favorites.includes(sale.id);
@@ -1126,9 +1150,7 @@ function renderCard(sale) {
     <div class="card-cats">${catTags}</div>
     <div class="card-items">${sale.items}</div>
     ${sale.notes ? `<div class="card-notes">📌 ${sale.notes}</div>` : ''}
-    <div class="card-dirs">
-      <a href="${directionsURL(sale.address)}" target="_blank" rel="noopener" aria-label="Get directions to ${sale.address} in Google Maps">📍 Directions</a>
-    </div>
+    ${directionsHTML(sale)}
   `;
 
   div.querySelector('.fav-btn').addEventListener('click', (e) => { e.stopPropagation(); toggleFav(sale.id); });
@@ -1193,6 +1215,7 @@ function popupHTML(sale) {
   if (sale.notes.toLowerCase().includes('moving')) badges.push('<span class="badge badge-moving">Moving Sale</span>');
   if (sale.notes.toLowerCase().includes('no early')) badges.push('<span class="badge badge-noearly">No Early Birds</span>');
 
+  const dirsLine = `<a href="${directionsURL(sale.address)}" target="_blank" class="popup-link">📍 Get Directions in Google Maps</a>`;
   return `
     <div class="popup-title">#${sale.id} &mdash; ${sale.address}</div>
     <div class="popup-badges">${badges.join(' ')}</div>
@@ -1200,7 +1223,7 @@ function popupHTML(sale) {
     <div class="popup-text" style="margin-top:5px">${sale.categories.join(', ')}</div>
     <div class="popup-text" style="margin-top:5px">${sale.items}</div>
     ${sale.notes ? `<div class="popup-text" style="color:#B85C38;margin-top:4px;font-style:italic">📌 ${sale.notes}</div>` : ''}
-    <a href="${directionsURL(sale.address)}" target="_blank" class="popup-link">📍 Get Directions in Google Maps</a>
+    ${dirsLine}
     <div class="popup-actions">
       <button class="popup-btn popup-btn-fav" onclick="toggleFavPopup(${sale.id})">${isFav ? '♥ Saved' : '♡ Save'}</button>
       <button class="popup-btn popup-btn-route" onclick="toggleRoutePopup(${sale.id})">${inRoute ? '🗺 In Route' : '🗺 Add to Route'}</button>
